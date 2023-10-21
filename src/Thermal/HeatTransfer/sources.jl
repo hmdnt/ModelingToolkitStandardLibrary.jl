@@ -1,5 +1,5 @@
 """
-    FixedHeatFlow(; name, Q_flow = 1.0, T_ref = 293.15, alpha = 0.0)
+    FixedHeatFlow(; name, Q_flow = 1.0)
 
 Fixed heat flow boundary condition.
 
@@ -14,21 +14,17 @@ the component FixedHeatFlow is connected, if parameter `Q_flow` is positive.
 # Parameters:
 
   - `Q_flow`: [W] Fixed heat flow rate at port
-  - `T_ref`: [K] Reference temperature
-  - `alpha`: [1/K] Temperature coefficient of heat flow rate
 """
 @mtkmodel FixedHeatFlow begin
     @parameters begin
         Q_flow = 1.0, [description = "Fixed heat flow rate at port"]
-        T_ref = 293.15, [description = "Reference temperature"]
-        alpha = 0.0, [description = "Temperature coefficient of heat flow rate"]
     end
     @components begin
         port = HeatPort()
     end
 
     @equations begin
-        port.Q_flow ~ -Q_flow * (1 + alpha * (port.T - T_ref))
+        port.Q_flow ~ -Q_flow
     end
 end
 
@@ -60,37 +56,27 @@ This model defines a fixed temperature `T` at its port in kelvin, i.e., it defin
 end
 
 """
-    PrescribedHeatFlow(; name, T_ref = 293.15, alpha = 0.0)
+    PrescribedHeatFlow(; name)
 
 Prescribed heat flow boundary condition.
 
 This model allows a specified amount of heat flow rate to be "injected" into a thermal system at a given port.
 The amount of heat is given by the input signal `Q_flow` into the model. The heat flows into the component to which
 the component `PrescribedHeatFlow` is connected, if the input signal is positive.
-If parameter alpha is > 0, the heat flow is multiplied by `1 + alpha*(port.T - T_ref`) in order to simulate temperature
-dependent losses (which are given a reference temperature T_ref).
 
 # Connectors:
 
   - `port`
   - `RealInput` `Q_flow` Input for the heat flow
 
-# Parameters:
-
-  - `T_ref`: [K] Reference temperature
-  - `alpha`: [1/K] Temperature coefficient of heat flow rate
 """
 @mtkmodel PrescribedHeatFlow begin
-    @parameters begin
-        T_ref = 293.15, [description = "Reference temperature"]
-        alpha = 0.0, [description = "Temperature coefficient of heat flow rate"]
-    end
     @components begin
         port = HeatPort()
         Q_flow = RealInput()
     end
     @equations begin
-        port.Q_flow ~ -Q_flow.u * (1 + alpha * (port.T - T_ref))
+        port.Q_flow ~ -Q_flow.u
     end
 end
 
