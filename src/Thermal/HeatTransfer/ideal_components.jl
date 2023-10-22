@@ -93,6 +93,48 @@ Lumped thermal element transporting heat without storing it.
 end
 
 """
+    ThermalDistributedResistor(; name, R, C, n)
+
+Distributed thermal element transporting heat with the ability to store it.
+
+# States:
+
+  - `T(t)[1:n+2]`   :  [`K`] Temperature of subdivisions
+  - `dT`            :  [`K`] Temperature difference across the component a.T - b.T
+
+# Connectors:
+
+  - `port_a`
+  - `port_b`
+
+# Parameters:
+
+  - `R`: [`K/W`] Constant thermal resistance of material
+  - `C`: [`J/K`] Constant thermal capacitance of material
+  - `n`: Number of subdivisions
+"""
+
+@component function ThermalDistributedResistor(; name, R, C, n=1)
+    sts = @variables (T(t))[1:n+2] dT(t)
+
+    @named port_a = HeatPort()
+    @named port_b = HeatPort()
+    n1 = n + 2
+    Re = R/n
+    Ce = C/n
+
+    eqs = [
+        dT ~ T[1] - T[n1];
+        T[1] ~ port_a.T;
+        T[n1] ~ port_b.T;
+        port_a.Q_flow ~ (T[1] - T[2])*2/Re;
+        port_b.Q_flow ~ -(T[n1-1] - T[n1])*2/Re;
+        [D(T[i]) ~ (T[i-1] - 2*T[i] + T[i+1])/(Re*Ce) for i in 2:n1-1]...;
+    ]
+    return ODESystem(eqs, t, [sts...;], []; systems = [port_a, port_b], name = name)
+end
+
+"""
     ConvectiveConductor(; name, G)
 
 Lumped thermal element for heat convection.

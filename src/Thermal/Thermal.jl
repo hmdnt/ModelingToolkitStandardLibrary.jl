@@ -13,7 +13,7 @@ include("utils.jl")
 
 export BodyRadiation, ConvectiveConductor, ConvectiveResistor, HeatCapacitor,
     ThermalConductor,
-    ThermalResistor, ThermalCollector
+    ThermalResistor, ThermalDistributedResistor, ThermalCollector
 include("HeatTransfer/ideal_components.jl")
 
 export RelativeTemperatureSensor, HeatFlowSensor, TemperatureSensor
